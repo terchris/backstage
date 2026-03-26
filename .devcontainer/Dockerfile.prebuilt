@@ -1,0 +1,30 @@
+FROM mcr.microsoft.com/devcontainers/typescript-node:22
+
+# System dependencies (chromium + native build libs for node-canvas etc.)
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+       chromium \
+       build-essential \
+       libcairo2-dev \
+       libpango1.0-dev \
+       libjpeg-dev \
+       libgif-dev \
+       librsvg2-dev \
+       python3-venv \
+       python3-pip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Python virtual environment + mkdocs-techdocs-core (replaces mkdocs feature + setup.sh pip install)
+ENV VIRTUAL_ENV=/home/node/venv
+RUN python3 -m venv $VIRTUAL_ENV \
+    && $VIRTUAL_ENV/bin/pip install --no-cache-dir mkdocs-techdocs-core
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Pre-populate yarn cache so yarn install at startup is fast
+# Copy only the files needed for dependency resolution
+COPY package.json yarn.lock .yarnrc.yml /tmp/backstage/
+COPY .yarn /tmp/backstage/.yarn
+RUN cd /tmp/backstage \
+    && corepack enable \
+    && yarn install --mode=skip-build 2>/dev/null || true \
+    && rm -rf /tmp/backstage

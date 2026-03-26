@@ -1,12 +1,8 @@
 {
   "name": "Backstage",
   "forwardPorts": [3000, 7007],
-  "build": { "dockerfile": "Dockerfile" },
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2.5.7": {},
-    "ghcr.io/devcontainers-extra/features/mkdocs:2": {}
-  },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "image": "ghcr.io/terchris/backstage:latest",
+  "postCreateCommand": "yarn install",
   "hostRequirements": {
     "cpus": 2,
     "memory": "4gb",
